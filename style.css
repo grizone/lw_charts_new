@@ -1,0 +1,315 @@
+/*  Alex Graphs – Mobile-first responsive CSS
+    Комментарии отмечают: 1) назначение блока
+                           2) мобильные/ландшафтные переопределения
+                           3) touch-first правки
+--------------------------------------------------------------- */
+
+/* 1. CSS-переменные (темы) */
+:root{
+  --bg-1:#131722;          /* основной фон */
+  --panel:#1e222d;         /* фон панелей */
+  --text-1:#d1d4dc;        /* основной текст */
+  --sub:#9aa0aa;           /* второстепенный текст */
+  --border:#2a2e39;        /* линии */
+  --grid:#2a2e39;          /* сетка графика */
+  --up:#26a69a;            /* рост (зелёный) */
+  --down:#ef5350;          /* падение (красный) */
+  --accent:#2962ff;        /* акцент (синий) */
+}
+
+/* 2. Базовые сбросы и высота 100 % */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background:var(--bg-1);
+  color:var(--text-1);
+  font:14px/1.45 Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;
+}
+
+/* 3. Основная сетка терминала
+      По умолчанию: левая колонка 44 px, график 1fr
+      Портрет → сетка 1 колонка (см. media-запросы ниже) */
+.app{
+  height:100vh;
+  display:grid;
+  grid-template-columns:44px 1fr;
+  grid-template-rows:48px 1fr 28px;
+}
+
+/* 4. Верхняя панель (topbar) */
+.topbar{
+  grid-column:1 / -1;          /* растягиваем на всю ширину */
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:0 12px;
+  background:var(--panel);
+  border-bottom:1px solid var(--border);
+}
+.symbol{display:flex;align-items:center;gap:8px;font-weight:600}
+.badge{font-size:12px;padding:2px 6px;background:#2b313f;border-radius:6px;color:#aeb4bf}
+.ohlc{font-size:12px;color:var(--sub)}
+.actions{margin-left:auto;display:flex;gap:8px}
+.btn{
+  height:28px;
+  padding:0 10px;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  border-radius:6px;
+  border:1px solid transparent;
+  color:var(--text-1);
+  background:transparent;
+  cursor:pointer;
+}
+.btn:hover{background:#242938;border-color:#2f3447}
+.btn.active{background:#2a2f40;border-color:#3a4057}
+
+/* 5. Левая панель инструментов (side) */
+.side{
+  grid-row:2;
+  background:var(--panel);
+  border-right:1px solid var(--border);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:8px 4px;
+  gap:8px;
+}
+.tool{
+  width:32px;
+  height:32px;
+  display:grid;
+  place-items:center;
+  color:#a3a9b8;
+  border-radius:6px;
+  cursor:pointer;
+}
+.tool:hover,.tool.active{background:#242938;color:#fff}
+
+/* 6. Область графика */
+.main{position:relative;overflow:hidden}
+#chart{width:100%;height:100%}
+
+.tooltip{
+  position:absolute;
+  top:8px;right:8px;
+  display:none;
+  pointer-events:none;
+  background:rgba(26,29,40,.85);
+  border:1px solid var(--border);
+  color:var(--text-1);
+  font-size:12px;
+  padding:6px 8px;
+  border-radius:6px;
+}
+.watermark{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  display:grid;
+  place-items:center;
+  color:rgba(255,255,255,.03);
+  font-weight:800;
+  font-size:48px;
+  letter-spacing:.08em;
+  user-select:none;
+}
+
+/* 7. Вкладки таймфреймов (tabs) */
+.tabs{
+  display:flex;
+  align-items:center;
+  gap:4px;
+  padding:0 8px;
+  background:rgba(19,23,34,.86);
+  border:1px solid var(--border);
+  border-radius:4px;
+  margin-left:8px;
+}
+.tab{
+  font-size:12px;
+  color:#a3a9b8;
+  padding:4px 6px;
+  border-radius:3px;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.tab:hover{background:#242938;color:#fff}
+.tab.active{background:#2a2f40;color:#fff}
+
+/* 8. Нижняя панель статуса */
+.statusbar{
+  grid-column:1 / -1;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:0 10px;
+  background:var(--panel);
+  border-top:1px solid var(--border);
+  font-size:12px;
+  color:#a3a9b8;
+}
+.statusbar .value{color:var(--text-1)}
+
+/* 9. Общий стиль для выпадающих селектов (символ + таймфрейм) */
+	#symbolSelect,
+	#timeframeSelect{
+	  background:var(--panel);
+	  color:var(--text-1);
+	  border:1px solid var(--border);
+	  border-radius:4px;
+	  padding:2px 4px;
+	  font-size:14px;
+	  font-family:inherit;
+	  -webkit-appearance:none;
+	  -moz-appearance:none;
+	  appearance:none;
+	  cursor:pointer;
+	  min-width:60px;
+	}
+	#symbolSelect{min-width:80px} /* символу чуть шире */
+
+	#symbolSelect:focus,
+	#timeframeSelect:focus{outline:none;border-color:var(--accent)}
+
+	#symbolSelect:disabled,
+	#timeframeSelect:disabled{opacity:0.6;cursor:not-allowed}
+
+	/* фон пунктов списка */
+	#symbolSelect option,
+	#timeframeSelect option{
+	  background:var(--panel);
+	  color:var(--text-1);
+	}
+
+/* 10. Мобильные переопределения (portrait ≤ 768 px) */
+@media (max-width: 768px) and (orientation: portrait){
+  /* сетка 1 колонка, левая панель скрыта */
+  .app{grid-template-columns:1fr;grid-template-rows:48px 1fr 28px}
+  .side{display:none}
+  .topbar{padding:0 8px}
+  .ohlc{display:none}          /* экономим место */
+  .tabs{margin-left:auto}      /* табы прижимаем вправо */
+}
+
+/* 11. Горизонтальный режим на мобильном (≤ 768 px) */
+@media (max-width: 768px) and (orientation: landscape){
+  /* чуть уже левая панель и меньше шрифты */
+  .app{grid-template-columns:38px 1fr;grid-template-rows:40px 1fr 24px}
+  .side{padding:4px 2px;gap:4px}
+  .tool{width:28px;height:28px;font-size:14px}
+}
+
+/* 12. Touch-first: крупные зоны нажатия
+      (применяется только на устройствах без hover) */
+@media (hover: none) and (pointer: coarse){
+  .btn,
+  .tool,
+  .tab{min-height:44px;min-width:44px}
+  #symbolSelect{font-size:16px} /* iOS не зумирует при фокусе */
+}
+
+/* 13. Разрешение свайпа по графику без скролла страницы */
+#chart{touch-action:pan-x pan-y}
+
+/* ---------- 14. Убираем горизонтальный overscroll ---------- */
+html,body{overflow-x:hidden}
+
+/* ---------- 15. График всегда вмещается ---------- */
+#chart{
+  width:100vw !important;   /* vw вместо %, чтобы избежать 100 % + padding */
+  max-width:100%;
+}
+
+/* ---------- 16. Портрет: выпадающий <select> вместо табов ---------- */
+@media (max-width: 768px) and (orientation: portrait){
+  /* табы скрываем */
+  .tabs{display:none}
+
+  /* показываем второй <select> для таймфрейма */
+  #timeframeSelect{
+    background:var(--panel);
+    color:var(--text-1);
+    border:1px solid var(--border);
+    border-radius:4px;
+    padding:2px 4px;
+    font-size:14px;
+    font-family:inherit;
+    cursor:pointer;
+    min-width:60px;
+    margin-left:8px;
+  }
+}
+
+	#fsBtn{
+	  display:inline-flex;
+	  align-items:center;
+	  justify-content:center;
+	  padding:0;          /* убираем боковые паддинги */
+	  width:28px;         /* делаем квадрат */
+	  height:28px;
+	}
+	
+	/* 18. Убираем белый фон у тайм-фрейма */
+	#timeframeSelect{
+	  background:var(--panel) !important;
+	  color:var(--text-1) !important;
+	  border:1px solid var(--border);
+	  border-radius:4px;
+	  padding:2px 4px;
+	  font-size:14px;
+	  font-family:inherit;
+	  cursor:pointer;
+	  min-width:60px;
+	  margin-left:8px;
+	  -webkit-appearance:none;
+	  -moz-appearance:none;
+	  appearance:none;
+	  background-clip:padding-box;   /* фикс iOS */
+	}
+
+	/* 19. Пункты выпадающего списка */
+	#timeframeSelect option{
+	  background:var(--panel) !important;
+	  color:var(--text-1) !important;
+	}
+	
+	/* 20. Новые стили для Мультииндикатора*/
+	/* ► Убрать стили модального окна – закомментируй блок ниже */
+	#dashboardModal {
+	  position: fixed; inset: 0;
+	  background: rgba(0,0,0,.6);
+	  display: none; align-items: center; justify-content: center;
+	  z-index: 1000;
+	}
+	#dashboardModal .modal-body {
+	  background: #1e222d;
+	  color: #fff;
+	  padding: 20px;
+	  border-radius: 8px;
+	  max-width: 320px;
+	  width: 100%;
+	}
+	#dashboardModal .close-btn {
+	  float: right;
+	  background: none;
+	  border: none;
+	  color: #fff;
+	  font-size: 20px;
+	  cursor: pointer;
+	}
+	#cfgForm label {
+	  display: block;
+	  margin: 8px 0 2px;
+	}
+	#cfgForm input {
+	  width: 100%;
+	  margin-bottom: 8px;
+	}
+	#saveBtn {
+	  margin-top: 10px;
+	  width: 100%;
+	}
+	
